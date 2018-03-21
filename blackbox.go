@@ -19,7 +19,7 @@ func New() *Logger {
 //WithCtx creates a new blackbox logger with a given context
 func WithCtx(contextData Ctx) *Logger {
 	logger := New()
-	logger.context.extend(contextData)
+	logger.context = logger.context.extend(contextData)
 	return logger
 }
 
@@ -175,9 +175,8 @@ func (l *Logger) AddTarget(target Target) {
 // sub logger from the merged context. This new logger will have the same
 // target set as the one Ctx is called upon.
 func (l *Logger) Ctx(context Ctx) *Logger {
-	mergedContext := l.context.extend(context)
 	return &Logger{
-		context:   mergedContext,
+		context:   l.context.extend(context),
 		targetSet: l.targetSet,
 	}
 }

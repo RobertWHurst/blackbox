@@ -103,26 +103,8 @@ func (s *PrettyTarget) writeLevel(level Level) {
 	for i := len(levelStr); i < 7; i++ {
 		padStr += " "
 	}
-
 	if s.useColor {
-		switch level {
-		case Trace:
-			levelStr = "\u001b[35m" + levelStr + "\u001b[0m"
-		case Debug:
-			levelStr = "\u001b[34m" + levelStr + "\u001b[0m"
-		case Verbose:
-			levelStr = "\u001b[36m" + levelStr + "\u001b[0m"
-		case Info:
-			levelStr = "\u001b[32m" + levelStr + "\u001b[0m"
-		case Warn:
-			levelStr = "\u001b[33m" + levelStr + "\u001b[0m"
-		case Error:
-			levelStr = "\u001b[31m" + levelStr + "\u001b[0m"
-		case Fatal:
-			levelStr = "\u001b[37m\u001b[41;1m" + levelStr + "\u001b[0m"
-		case Panic:
-			levelStr = "\u001b[37m\u001b[45;1m" + levelStr + "\u001b[0m"
-		}
+		levelStr = wrapStrInAnsiLevelColorCodes(level, levelStr)
 	}
 
 	levelBytes := []byte(levelStr + padStr + " ")
@@ -149,6 +131,9 @@ func (s *PrettyTarget) writeValues(level Level, values []interface{}) {
 func (s *PrettyTarget) writeContext(level Level, context map[string]string) {
 	contextStrs := make([]string, 0)
 	for key, value := range context {
+		if s.useColor {
+			key = wrapStrInAnsiLevelColorCodes(level, key)
+		}
 		contextStrs = append(contextStrs, key+"="+value)
 	}
 	sort.Strings(contextStrs)
@@ -170,4 +155,26 @@ func (s *PrettyTarget) writeNewline(level Level) {
 	} else {
 		s.outTarget.Write(newLineBytes)
 	}
+}
+
+func wrapStrInAnsiLevelColorCodes(level Level, str string) string {
+	switch level {
+	case Trace:
+		str = "\u001b[35m" + str + "\u001b[0m"
+	case Debug:
+		str = "\u001b[34m" + str + "\u001b[0m"
+	case Verbose:
+		str = "\u001b[36m" + str + "\u001b[0m"
+	case Info:
+		str = "\u001b[32m" + str + "\u001b[0m"
+	case Warn:
+		str = "\u001b[33m" + str + "\u001b[0m"
+	case Error:
+		str = "\u001b[31m" + str + "\u001b[0m"
+	case Fatal:
+		str = "\u001b[37m\u001b[41;1m" + str + "\u001b[0m"
+	case Panic:
+		str = "\u001b[37m\u001b[45;1m" + str + "\u001b[0m"
+	}
+	return str
 }

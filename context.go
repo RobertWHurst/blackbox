@@ -7,15 +7,19 @@ type context struct {
 }
 
 func (c *context) extend(contextData map[string]interface{}) context {
-	mergedContext := context{
-		data: c.data,
+	newContext := context{
+		data: make(map[string]string, 0),
 	}
+
+	for key, value := range c.data {
+		newContext.data[key] = value
+	}
+
 	for key, value := range contextData {
-		if value == nil {
-			delete(mergedContext.data, key)
-		} else {
-			mergedContext.data[key] = fmt.Sprintf("%+v", value)
+		if value != nil {
+			newContext.data[key] = fmt.Sprintf("%+v", value)
 		}
 	}
-	return mergedContext
+
+	return newContext
 }
