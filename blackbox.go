@@ -16,8 +16,8 @@ func New() *Logger {
 	}
 }
 
-//WithContext creates a new blackbox logger with a given context
-func WithContext(contextData Ctx) *Logger {
+//WithCtx creates a new blackbox logger with a given context
+func WithCtx(contextData Ctx) *Logger {
 	logger := New()
 	logger.context.extend(contextData)
 	return logger
