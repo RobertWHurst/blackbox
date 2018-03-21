@@ -192,6 +192,30 @@ type Target interface {
 	Log(level Level, values []interface{}, context map[string]string)
 }
 
+// LevelFromString returns a log level matching the given string
+func LevelFromString(levelStr string) Level {
+	var level Level
+	switch levelStr {
+	case "trace":
+		level = Trace
+	case "debug":
+		level = Debug
+	case "verbose":
+		level = Verbose
+	case "info":
+		level = Info
+	case "warn":
+		level = Warn
+	case "error":
+		level = Error
+	case "fatal":
+		level = Fatal
+	case "panic":
+		level = Panic
+	}
+	return level
+}
+
 // Level indicates the logging level to be used when logging messages.
 type Level int
 
