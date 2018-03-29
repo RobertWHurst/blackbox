@@ -6,7 +6,7 @@ type targetSet struct {
 
 func (t *targetSet) log(level Level, values []interface{}, context context) {
 	for _, target := range t.targets {
-		target.Log(level, values, context.data)
+		target.Log(level, values, context)
 	}
 }
 

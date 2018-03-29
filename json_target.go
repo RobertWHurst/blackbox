@@ -63,7 +63,7 @@ func (j *JSONTarget) ShowContext(b bool) *JSONTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (j *JSONTarget) Log(level Level, values []interface{}, context map[string]string) {
+func (j *JSONTarget) Log(level Level, values []interface{}, context context) {
 	if level < j.level {
 		return
 	}

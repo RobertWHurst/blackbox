@@ -70,7 +70,7 @@ func (s *PrettyTarget) UseColor(b bool) *PrettyTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (s *PrettyTarget) Log(level Level, values []interface{}, context map[string]string) {
+func (s *PrettyTarget) Log(level Level, values []interface{}, context context) {
 	if level < s.level {
 		return
 	}

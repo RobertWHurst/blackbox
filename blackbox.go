@@ -10,9 +10,7 @@ func New() *Logger {
 	return &Logger{
 		level:     Trace,
 		targetSet: &targetSet{},
-		context: context{
-			data: make(map[string]string, 0),
-		},
+		context:   make(context, 0),
 	}
 }
 
@@ -181,6 +179,16 @@ func (l *Logger) Ctx(context Ctx) *Logger {
 	}
 }
 
+// GetCtx returns a ctx instance containing a copy of the logger's internal
+// context data.
+func (l *Logger) GetCtx(context Ctx) Ctx {
+	ctx := make(Ctx, 0)
+	for key, value := range l.context {
+		ctx[key] = value
+	}
+	return ctx
+}
+
 // Ctx is an alias for map[string]interface{}. This is the format for
 // data to me used for extending contexts.
 type Ctx map[string]interface{}
@@ -188,7 +196,7 @@ type Ctx map[string]interface{}
 // Target is an interface ment to be implemented by types that collect log
 // data. blackbox ships with two of these: PrettyTarget and JSONTarget
 type Target interface {
-	Log(level Level, values []interface{}, context map[string]string)
+	Log(level Level, values []interface{}, context context)
 }
 
 // LevelFromString returns a log level matching the given string
