@@ -181,7 +181,7 @@ func (l *Logger) Ctx(context Ctx) *Logger {
 
 // GetCtx returns a ctx instance containing a copy of the logger's internal
 // context data.
-func (l *Logger) GetCtx(context Ctx) Ctx {
+func (l *Logger) GetCtx() Ctx {
 	ctx := make(Ctx, 0)
 	for key, value := range l.context {
 		ctx[key] = value
