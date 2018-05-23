@@ -174,6 +174,7 @@ func (l *Logger) AddTarget(target Target) {
 // target set as the one Ctx is called upon.
 func (l *Logger) Ctx(context Ctx) *Logger {
 	return &Logger{
+		level:     l.level,
 		context:   l.context.extend(context),
 		targetSet: l.targetSet,
 	}
