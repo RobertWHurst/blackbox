@@ -5,6 +5,45 @@ import (
 	"os"
 )
 
+const (
+	// Trace log level
+	Trace Level = iota
+	// Debug log level
+	Debug
+	// Verbose log level
+	Verbose
+	// Info log level
+	Info
+	// Warn log level
+	Warn
+	// Error log level
+	Error
+	// Fatal log level
+	Fatal
+	// Panic log level
+	Panic
+)
+
+// Logger will take log messages and write them to the targets provided
+type Logger struct {
+	level     Level
+	targetSet *targetSet
+	context   context
+}
+
+// Ctx is an alias for map[string]interface{}. This is the format for
+// data to me used for extending contexts.
+type Ctx map[string]interface{}
+
+// Target is an interface ment to be implemented by types that collect log
+// data. blackbox ships with two of these: PrettyTarget and JSONTarget
+type Target interface {
+	Log(level Level, values []interface{}, context context)
+}
+
+// Level indicates the logging level to be used when logging messages.
+type Level int
+
 // New creates a new blackbox logger
 func New() *Logger {
 	return &Logger{
@@ -17,15 +56,7 @@ func New() *Logger {
 //WithCtx creates a new blackbox logger with a given context
 func WithCtx(contextData Ctx) *Logger {
 	logger := New()
-	logger.context = logger.context.extend(contextData)
-	return logger
-}
-
-// Logger will take log messages and write them to the targets provided
-type Logger struct {
-	level     Level
-	targetSet *targetSet
-	context   context
+	return logger.Ctx(contextData)
 }
 
 // Log logs values to the loggers targets at the given log level. Any values
@@ -190,16 +221,6 @@ func (l *Logger) GetCtx() Ctx {
 	return ctx
 }
 
-// Ctx is an alias for map[string]interface{}. This is the format for
-// data to me used for extending contexts.
-type Ctx map[string]interface{}
-
-// Target is an interface ment to be implemented by types that collect log
-// data. blackbox ships with two of these: PrettyTarget and JSONTarget
-type Target interface {
-	Log(level Level, values []interface{}, context context)
-}
-
 // LevelFromString returns a log level matching the given string
 func LevelFromString(levelStr string) Level {
 	var level Level
@@ -223,28 +244,6 @@ func LevelFromString(levelStr string) Level {
 	}
 	return level
 }
-
-// Level indicates the logging level to be used when logging messages.
-type Level int
-
-const (
-	// Trace log level
-	Trace Level = iota
-	// Debug log level
-	Debug
-	// Verbose log level
-	Verbose
-	// Info log level
-	Info
-	// Warn log level
-	Warn
-	// Error log level
-	Error
-	// Fatal log level
-	Fatal
-	// Panic log level
-	Panic
-)
 
 // String returns the string representation of each Level constant
 func (l Level) String() string {
