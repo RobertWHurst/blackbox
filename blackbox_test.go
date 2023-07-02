@@ -11,8 +11,8 @@ func TestNewToReturnLogger(t *testing.T) {
 	var _ *blackbox.Logger = blackbox.New()
 }
 
-func TestWithCtxToReturnLogger(t *testing.T) {
-	var logger *blackbox.Logger = blackbox.WithCtx(blackbox.Ctx{"key": "value"})
+func TestNewWithCtxToReturnLogger(t *testing.T) {
+	var logger *blackbox.Logger = blackbox.NewWithCtx(blackbox.Ctx{"key": "value"})
 	testTarget := blackbox.NewTestTarget()
 	logger.AddTarget(testTarget)
 

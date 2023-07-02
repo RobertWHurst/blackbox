@@ -30,7 +30,6 @@ type JSONTarget struct {
 	showTimestamp bool
 	showLevel     bool
 	showContext   bool
-	useColor      bool
 }
 
 // SetLevel sets the minimum log level that JSONTarget will output. Note that
@@ -63,7 +62,7 @@ func (j *JSONTarget) ShowContext(b bool) *JSONTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (j *JSONTarget) Log(level Level, values []interface{}, context context) {
+func (j *JSONTarget) Log(level Level, values []interface{}, context Context) {
 	if level < j.level {
 		return
 	}
@@ -75,10 +74,14 @@ func (j *JSONTarget) Log(level Level, values []interface{}, context context) {
 	if j.showLevel {
 		jsonData["level"] = level.String()
 	}
-	strValues := make([]string, len(values))
+	strValues := make([]string, 0)
 	for _, value := range values {
 		strValues = append(strValues, fmt.Sprintf("%+v", value))
 	}
+
+	fmt.Printf("%+v\n", values)
+	fmt.Printf("%+v\n", strValues)
+
 	jsonData["message"] = strings.Join(strValues, " ")
 	if j.showContext {
 		jsonData["context"] = context

@@ -5,56 +5,24 @@ import (
 	"os"
 )
 
-const (
-	// Trace log level
-	Trace Level = iota
-	// Debug log level
-	Debug
-	// Verbose log level
-	Verbose
-	// Info log level
-	Info
-	// Warn log level
-	Warn
-	// Error log level
-	Error
-	// Fatal log level
-	Fatal
-	// Panic log level
-	Panic
-)
-
 // Logger will take log messages and write them to the targets provided
 type Logger struct {
 	level     Level
 	targetSet *targetSet
-	context   context
+	context   Context
 }
-
-// Ctx is an alias for map[string]interface{}. This is the format for
-// data to me used for extending contexts.
-type Ctx map[string]interface{}
-
-// Target is an interface ment to be implemented by types that collect log
-// data. blackbox ships with two of these: PrettyTarget and JSONTarget
-type Target interface {
-	Log(level Level, values []interface{}, context context)
-}
-
-// Level indicates the logging level to be used when logging messages.
-type Level int
 
 // New creates a new blackbox logger
 func New() *Logger {
 	return &Logger{
 		level:     Trace,
 		targetSet: &targetSet{},
-		context:   make(context, 0),
+		context:   make(Context, 0),
 	}
 }
 
-//WithCtx creates a new blackbox logger with a given context
-func WithCtx(contextData Ctx) *Logger {
+// NewWithCtx creates a new blackbox logger with a given context
+func NewWithCtx(contextData Ctx) *Logger {
 	logger := New()
 	return logger.Ctx(contextData)
 }
@@ -206,7 +174,7 @@ func (l *Logger) AddTarget(target Target) {
 func (l *Logger) Ctx(context Ctx) *Logger {
 	return &Logger{
 		level:     l.level,
-		context:   l.context.extend(context),
+		context:   l.context.Extend(context),
 		targetSet: l.targetSet,
 	}
 }
@@ -219,52 +187,4 @@ func (l *Logger) GetCtx() Ctx {
 		ctx[key] = value
 	}
 	return ctx
-}
-
-// LevelFromString returns a log level matching the given string
-func LevelFromString(levelStr string) Level {
-	var level Level
-	switch levelStr {
-	case "trace":
-		level = Trace
-	case "debug":
-		level = Debug
-	case "verbose":
-		level = Verbose
-	case "info":
-		level = Info
-	case "warn":
-		level = Warn
-	case "error":
-		level = Error
-	case "fatal":
-		level = Fatal
-	case "panic":
-		level = Panic
-	}
-	return level
-}
-
-// String returns the string representation of each Level constant
-func (l Level) String() string {
-	var levelStr string
-	switch l {
-	case Trace:
-		levelStr = "trace"
-	case Debug:
-		levelStr = "debug"
-	case Verbose:
-		levelStr = "verbose"
-	case Info:
-		levelStr = "info"
-	case Warn:
-		levelStr = "warn"
-	case Error:
-		levelStr = "error"
-	case Fatal:
-		levelStr = "fatal"
-	case Panic:
-		levelStr = "panic"
-	}
-	return levelStr
 }
