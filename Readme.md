@@ -40,7 +40,7 @@ The pretty target will output messages in a human readable format.
 
 ## Providing Context
 
-Blackbox has a concept called contexts. Contexts are a way to provide
+blackbox has a concept called contexts. Contexts are a way to provide
 additional information associated with a message. For example, if you're
 logging a message about a user, you might want to include the user's id in the
 message. You could do this by logging a string containing the user's id, but
@@ -56,7 +56,7 @@ logger.Info("Hello world", blackbox.Ctx{ "type": "greeting" })
 
 ## Levels
 
-Blackbox has 6 levels. Trace, Debug, Info, Warn, Error, and Fatal. Each level
+blackbox has 6 levels. Trace, Debug, Info, Warn, Error, and Fatal. Each level
 has a purpose, and a meaning. Some have special behavior such as Fatal which
 will cause the program to exit.
 
@@ -150,8 +150,8 @@ type Target interface {
 }
 ```
 
-Please note that if syncronization is needed, it should be handled by the
-target. The logger will not handle syncronization.
+Please note that if synchronization is needed, it should be handled by the
+target. The logger will not handle synchronization.
 
 Let's go over the arguments to the Log method.
 
@@ -168,6 +168,6 @@ the type here is not Ctx; Ctx is used when passing context data to the logger.
 The Context type is an assembled collection of all context data, and is how 
 the logger stores context data internally.
 
-With these values targets can to a wide range of things with maximum flexability
+With these values targets can to a wide range of things with maximum flexibility
 and control.
 
