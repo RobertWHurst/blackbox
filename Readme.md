@@ -186,5 +186,5 @@ appreciated since this is an open source effort after all.
 
 Thank you!
 
-[bug-report]: https://github.com/RobertWHurst/Keystrokes/issues/new?template=bug_report.md
-[feature-request]: https://github.com/RobertWHurst/Keystrokes/issues/new?template=feature_request.md
+[bug-report]: https://github.com/RobertWHurst/blackbox/issues/new?template=bug_report.md
+[feature-request]: https://github.com/RobertWHurst/blackbox/issues/new?template=feature_request.md
