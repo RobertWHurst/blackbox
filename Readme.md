@@ -69,6 +69,26 @@ names, and other information that might be useful to have in a log message.
 logger.Info("Hello world", blackbox.Ctx{ "type": "greeting" })
 ```
 
+Context data can be added to log messages by passing blackbox.Ctx as an argument
+to any of the logging methods, but it can also be added to the logger itself.
+
+```go
+logger := blackbox.NewWithCtx(blackbox.Ctx{ "context": "greeter" })
+```
+
+This logger will now attach the context above to every message it logs. This
+can be useful for attaching things like component names, or request ids.
+
+Lastly, it's possible to create a new logger with a parent logger. This will
+cause the new logger to inherit the parent's context.
+
+```go
+subLogger := logger.WithCtx(blackbox.Ctx{ "context": "greeter-formatter" })
+```
+
+This sub logger will now have the context of both the parent logger, and the
+context passed to WithCtx.
+
 ## Levels
 
 blackbox has 6 levels. Trace, Debug, Info, Warn, Error, and Fatal. Each level
@@ -111,6 +131,13 @@ Targets handle logger output. Loggers can have more than one target. There are
 two targets included with blackbox. A pretty target, and a JSON target. Both
 will write to any pair of io.Writer. This allows you to write to files, stdout,
 stderr, or any other io.Writer.
+
+```go
+logger.AddTarget(blackbox.NewPrettyTarget(os.Stdout, os.Stderr))
+```
+
+The above example will add a pretty target that will write to stdout, and
+stderr.
 
 Let's take a look at these two targets.
 
