@@ -13,10 +13,10 @@ type TestTarget struct {
 type Logged struct {
 	Level   Level
 	Values  []interface{}
-	Context map[string]string
+	Context Ctx
 }
 
-func (t *TestTarget) Log(level Level, values []interface{}, context Context) {
+func (t *TestTarget) Log(level Level, values []interface{}, context Ctx) {
 	t.logged = append(t.logged, Logged{
 		Level:   level,
 		Values:  values,

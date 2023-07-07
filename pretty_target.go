@@ -29,6 +29,7 @@ type PrettyTarget struct {
 	level         Level
 	showTimestamp bool
 	showLevel     bool
+	contextFields []string
 	showContext   bool
 	useColor      bool
 }
@@ -54,6 +55,14 @@ func (s *PrettyTarget) ShowLevel(b bool) *PrettyTarget {
 	return s
 }
 
+// SelectContext will limit the context key value pairs in the output to only
+// those specified as arguments to SelectContext. If select context is called
+// no arguments then all context key value pairs will be output.
+func (s *PrettyTarget) SelectContext(fields ...string) *PrettyTarget {
+	s.contextFields = fields
+	return s
+}
+
 // ShowContext will enable or disable context key value pairs in the output
 // depending on the boolean value passed.
 func (s *PrettyTarget) ShowContext(b bool) *PrettyTarget {
@@ -70,7 +79,7 @@ func (s *PrettyTarget) UseColor(b bool) *PrettyTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (s *PrettyTarget) Log(level Level, values []interface{}, context Context) {
+func (s *PrettyTarget) Log(level Level, values []interface{}, context Ctx) {
 	if level < s.level {
 		return
 	}
@@ -128,17 +137,33 @@ func (s *PrettyTarget) writeValues(level Level, values []interface{}) {
 	}
 }
 
-func (s *PrettyTarget) writeContext(level Level, context map[string]string) {
+func (s *PrettyTarget) writeContext(level Level, context map[string]interface{}) {
 	contextStrs := make([]string, 0)
 	for key, value := range context {
+
+		if len(s.contextFields) != 0 {
+			skipField := true
+			for _, field := range s.contextFields {
+				if key == field {
+					skipField = false
+					break
+				}
+			}
+			if skipField {
+				continue
+			}
+		}
+
 		if s.useColor {
 			key = wrapStrInAnsiLevelColorCodes(level, key)
 		}
-		contextStrs = append(contextStrs, key+"="+value)
+
+		formattedValue := strings.Replace(fmt.Sprintf("%+v", value), "\n", "\\n", -1)
+		contextStrs = append(contextStrs, key+"="+formattedValue)
 	}
+
 	sort.Strings(contextStrs)
 	contextStr := strings.Join(contextStrs, " ")
-
 	contextBytes := []byte(" " + contextStr)
 
 	if level >= Warn {

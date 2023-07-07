@@ -9,7 +9,7 @@ import (
 type Logger struct {
 	level     Level
 	targetSet *targetSet
-	context   Context
+	context   Ctx
 }
 
 // New creates a new blackbox logger
@@ -17,14 +17,14 @@ func New() *Logger {
 	return &Logger{
 		level:     Trace,
 		targetSet: &targetSet{},
-		context:   make(Context, 0),
+		context:   make(Ctx, 0),
 	}
 }
 
 // NewWithCtx creates a new blackbox logger with a given context
 func NewWithCtx(contextData Ctx) *Logger {
 	logger := New()
-	return logger.Ctx(contextData)
+	return logger.WithCtx(contextData)
 }
 
 // Log logs values to the loggers targets at the given log level. Any values
@@ -168,10 +168,10 @@ func (l *Logger) AddTarget(target Target) {
 	l.targetSet.addTarget(target)
 }
 
-// Ctx takes a context, merging it with the current one, and creates a new
+// WithCtx takes a context, merging it with the current one, and creates a new
 // sub logger from the merged context. This new logger will have the same
-// target set as the one Ctx is called upon.
-func (l *Logger) Ctx(context Ctx) *Logger {
+// target set as the one WithCtx is called upon.
+func (l *Logger) WithCtx(context Ctx) *Logger {
 	return &Logger{
 		level:     l.level,
 		context:   l.context.Extend(context),

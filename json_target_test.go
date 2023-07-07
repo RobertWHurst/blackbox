@@ -10,7 +10,7 @@ import (
 )
 
 type JSONOutput struct {
-	Context map[string]string
+	Context blackbox.Ctx
 	Level   string
 	Message string
 	Time    string
@@ -24,7 +24,7 @@ func TestJsonTarget(t *testing.T) {
 	values := make([]interface{}, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, map[string]string{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
 	json.Unmarshal(outBuf.Bytes(), &output)
@@ -45,12 +45,12 @@ func TestJsonTargetSetLevel(t *testing.T) {
 	values := make([]interface{}, 1)
 	values[0] = "Filtered Message"
 
-	jsonTarget.Log(blackbox.Trace, values, map[string]string{"x": "y"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"x": "y"})
 
 	values = make([]interface{}, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Info, values, map[string]string{"key": "value"})
+	jsonTarget.Log(blackbox.Info, values, blackbox.Ctx{"key": "value"})
 
 	assert.NotRegexp(t, `Filtered Message`, outBuf.String())
 	assert.Regexp(t, `Hello Test`, outBuf.String())
@@ -66,7 +66,7 @@ func TestJsonTargetShowTimestamp(t *testing.T) {
 	values := make([]interface{}, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, map[string]string{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
 	json.Unmarshal(outBuf.Bytes(), &output)
@@ -87,7 +87,7 @@ func TestJsonTargetShowContext(t *testing.T) {
 	values := make([]interface{}, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, map[string]string{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
 	json.Unmarshal(outBuf.Bytes(), &output)

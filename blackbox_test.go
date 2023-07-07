@@ -22,7 +22,7 @@ func TestNewWithCtxToReturnLogger(t *testing.T) {
 
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "Message", logged.Values[0].(string))
-	assert.Equal(t, map[string]string{"key": "value"}, logged.Context)
+	assert.Equal(t, blackbox.Ctx{"key": "value"}, logged.Context)
 }
 
 func TestLoggerLogToReturnLogger(t *testing.T) {
@@ -63,7 +63,7 @@ func TestLoggerCtxToReturnLogger(t *testing.T) {
 	testTarget := blackbox.NewTestTarget()
 	logger.AddTarget(testTarget)
 
-	var subLogger *blackbox.Logger = logger.Ctx(blackbox.Ctx{"key": "value"})
+	var subLogger *blackbox.Logger = logger.WithCtx(blackbox.Ctx{"key": "value"})
 	subLogger.Log(blackbox.Info, "Message")
 
 	logged, ok := testTarget.LastLogged()
@@ -71,5 +71,5 @@ func TestLoggerCtxToReturnLogger(t *testing.T) {
 	assert.Equal(t, true, ok)
 	assert.Equal(t, blackbox.Info, logged.Level)
 	assert.Equal(t, "Message", logged.Values[0].(string))
-	assert.Equal(t, map[string]string{"key": "value"}, logged.Context)
+	assert.Equal(t, blackbox.Ctx{"key": "value"}, logged.Context)
 }

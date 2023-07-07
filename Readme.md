@@ -1,7 +1,9 @@
-# blackbox - Just a logger
+# blackbox - A flight recorder for Go
 
-Blackbox is a dead simple logger that will do exactly what you want a logger
-todo - log messages, messages that are clear and contextual.
+__If you encounter a bug please [report it][bug-report].__
+
+Blackbox is a simple logger that will do exactly what you want a logger
+to do - log messages, messages that are clear and contextual.
 
 ```go
 logger := blackbox.New()
@@ -163,11 +165,26 @@ is because the logger will accept any number of arguments of any type. By
 passing the values to the target, it allows the target to decide how to
 format and/or consume them respective of value type.
 
-The third argument is the context of the message. It's important to note that
-the type here is not Ctx; Ctx is used when passing context data to the logger.
-The Context type is an assembled collection of all context data, and is how 
-the logger stores context data internally.
+The third argument is the context of the message, a map with string keys and
+interface{} as the values.
 
 With these values targets can to a wide range of things with maximum flexibility
 and control.
 
+## Help Welcome
+
+If you want to support this project by throwing be some coffee money It's
+greatly appreciated.
+
+[![sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/RobertWHurst)
+
+If your interested in providing feedback or would like to contribute please feel
+free to do so. I recommend first [opening an issue][feature-request] expressing
+your feedback or intent to contribute a change, from there we can consider your
+feedback or guide your contribution efforts. Any and all help is greatly
+appreciated since this is an open source effort after all.
+
+Thank you!
+
+[bug-report]: https://github.com/RobertWHurst/Keystrokes/issues/new?template=bug_report.md
+[feature-request]: https://github.com/RobertWHurst/Keystrokes/issues/new?template=feature_request.md
