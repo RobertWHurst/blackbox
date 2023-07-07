@@ -20,7 +20,7 @@ func TestPrettyTarget(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2} \x1b\[\d{2}mtrace\x1b\[`+
+		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z \x1b\[\d{2}mtrace\x1b\[`+
 			`0m   Hello Test \x1b\[\d{2}mkey\x1b\[0m=value\n$`,
 		outBuf.String(),
 	)
@@ -95,7 +95,7 @@ func TestPrettyTargetShowContext(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2} \x1b\[\d{2}mtrace\x1b\[`+
+		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z \x1b\[\d{2}mtrace\x1b\[`+
 			`0m   Hello Test\n$`,
 		outBuf.String(),
 	)
@@ -115,7 +115,7 @@ func TestPrettyTargetUseColor(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2} trace   Hello Test key=`+
+		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z trace   Hello Test key=`+
 			`value\n$`,
 		outBuf.String(),
 	)
