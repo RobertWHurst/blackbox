@@ -1,3 +1,16 @@
+
+<p align="center">
+  <a href="https://pkg.go.dev/github.com/RobertWHurst/blackbox">
+    <img src="https://img.shields.io/github/go-mod/go-version/RobertWHurst/blackbox">
+  </a>
+  <a href="https://github.com/RobertWHurst/blackbox/actions/workflows/ci.yml">
+    <img src="https://github.com/RobertWHurst/blackbox/actions/workflows/ci.yml/badge.svg">
+  </a>
+  <a href="https://github.com/sponsors/RobertWHurst">
+    <img src="https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86">
+  </a>
+</p>
+
 # blackbox - A flight recorder for Go
 
 __If you encounter a bug please [report it][bug-report].__
