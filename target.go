@@ -11,6 +11,13 @@ type targetSet struct {
 }
 
 func (t *targetSet) log(level Level, values []interface{}, context Ctx) {
+	for index, value := range values {
+		if ctx, ok := value.(Ctx); ok {
+			context = context.Extend(ctx)
+			values = append(values[:index], values[index+1:]...)
+		}
+	}
+
 	for _, target := range t.targets {
 		target.Log(level, values, context)
 	}

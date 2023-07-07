@@ -73,3 +73,18 @@ func TestLoggerCtxToReturnLogger(t *testing.T) {
 	assert.Equal(t, "Message", logged.Values[0].(string))
 	assert.Equal(t, blackbox.Ctx{"key": "value"}, logged.Context)
 }
+
+func TestLoggerInlineCtx(t *testing.T) {
+	logger := blackbox.New()
+	testTarget := blackbox.NewTestTarget()
+	logger.AddTarget(testTarget)
+
+	logger.Log(blackbox.Info, "Message", blackbox.Ctx{"key": "value"})
+
+	logged, ok := testTarget.LastLogged()
+
+	assert.Equal(t, true, ok)
+	assert.Equal(t, blackbox.Info, logged.Level)
+	assert.Equal(t, "Message", logged.Values[0].(string))
+	assert.Equal(t, blackbox.Ctx{"key": "value"}, logged.Context)
+}
