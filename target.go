@@ -1,5 +1,7 @@
 package blackbox
 
+import "sync"
+
 // Target is an interface ment to be implemented by types that collect log
 // data. blackbox ships with two of these: PrettyTarget and JSONTarget
 type Target interface {
@@ -7,7 +9,8 @@ type Target interface {
 }
 
 type targetSet struct {
-	targets []Target
+	targets     []Target
+	targetsLock sync.Mutex
 }
 
 func (t *targetSet) log(level Level, values []interface{}, context Ctx) {
@@ -18,11 +21,15 @@ func (t *targetSet) log(level Level, values []interface{}, context Ctx) {
 		}
 	}
 
+	t.targetsLock.Lock()
 	for _, target := range t.targets {
 		target.Log(level, values, context)
 	}
+	t.targetsLock.Unlock()
 }
 
 func (t *targetSet) addTarget(target Target) {
+	t.targetsLock.Lock()
 	t.targets = append(t.targets, target)
+	t.targetsLock.Unlock()
 }
