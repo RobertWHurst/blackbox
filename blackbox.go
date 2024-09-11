@@ -3,6 +3,7 @@ package blackbox
 import (
 	"fmt"
 	"os"
+	"sync"
 )
 
 // Logger will take log messages and write them to the targets provided
@@ -10,6 +11,7 @@ type Logger struct {
 	level     Level
 	targetSet *targetSet
 	context   Ctx
+	lock      *sync.Mutex
 }
 
 // New creates a new blackbox logger
@@ -18,6 +20,7 @@ func New() *Logger {
 		level:     Trace,
 		targetSet: &targetSet{},
 		context:   make(Ctx, 0),
+		lock:      &sync.Mutex{},
 	}
 }
 
@@ -33,7 +36,11 @@ func (l *Logger) Log(level Level, values ...interface{}) *Logger {
 	if level < l.level {
 		return l
 	}
-	l.targetSet.log(level, values, l.context)
+	go func() {
+		l.lock.Lock()
+		l.targetSet.log(level, values, l.context)
+		l.lock.Unlock()
+	}()
 	return l
 }
 
