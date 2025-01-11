@@ -98,10 +98,14 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx) {
 
 func (s *PrettyTarget) writeCurrentTimestamp(level Level) {
 	timestampBytes := []byte(time.Now().Local().Format(time.RFC3339) + " ")
+	var err error
 	if level >= Warn {
-		s.errTarget.Write(timestampBytes)
+		_, err = s.errTarget.Write(timestampBytes)
 	} else {
-		s.outTarget.Write(timestampBytes)
+		_, err = s.outTarget.Write(timestampBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -117,10 +121,14 @@ func (s *PrettyTarget) writeLevel(level Level) {
 	}
 
 	levelBytes := []byte(levelStr + padStr + " ")
+	var err error
 	if level >= Warn {
-		s.errTarget.Write(levelBytes)
+		_, err = s.errTarget.Write(levelBytes)
 	} else {
-		s.outTarget.Write(levelBytes)
+		_, err = s.outTarget.Write(levelBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -130,10 +138,14 @@ func (s *PrettyTarget) writeValues(level Level, values []any) {
 		valueStrs = append(valueStrs, fmt.Sprintf("%+v", value))
 	}
 	messageBytes := []byte(strings.Join(valueStrs, " "))
+	var err error
 	if level >= Warn {
-		s.errTarget.Write(messageBytes)
+		_, err = s.errTarget.Write(messageBytes)
 	} else {
-		s.outTarget.Write(messageBytes)
+		_, err = s.outTarget.Write(messageBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -166,19 +178,27 @@ func (s *PrettyTarget) writeContext(level Level, context map[string]any) {
 	contextStr := strings.Join(contextStrs, " ")
 	contextBytes := []byte(" " + contextStr)
 
+	var err error
 	if level >= Warn {
-		s.errTarget.Write(contextBytes)
+		_, err = s.errTarget.Write(contextBytes)
 	} else {
-		s.outTarget.Write(contextBytes)
+		_, err = s.outTarget.Write(contextBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
 
 func (s *PrettyTarget) writeNewline(level Level) {
 	newLineBytes := []byte("\n")
+	var err error
 	if level >= Warn {
-		s.errTarget.Write(newLineBytes)
+		_, err = s.errTarget.Write(newLineBytes)
 	} else {
-		s.outTarget.Write(newLineBytes)
+		_, err = s.outTarget.Write(newLineBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
 
