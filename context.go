@@ -1,8 +1,8 @@
 package blackbox
 
-// Ctx is an alias for map[string]interface{}. This is the format for
+// Ctx is an alias for map[string]any. This is the format for
 // data to me used for extending contexts.
-type Ctx map[string]interface{}
+type Ctx map[string]any
 
 // Extend returns a new context with the given context data added to it.
 // If a key already exists in the context, it will be overwritten.

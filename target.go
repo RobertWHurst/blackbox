@@ -5,7 +5,7 @@ import "sync"
 // Target is an interface ment to be implemented by types that collect log
 // data. blackbox ships with two of these: PrettyTarget and JSONTarget
 type Target interface {
-	Log(level Level, values []interface{}, context Ctx)
+	Log(level Level, values []any, context Ctx)
 }
 
 type targetSet struct {
@@ -13,7 +13,7 @@ type targetSet struct {
 	targetsLock sync.Mutex
 }
 
-func (t *targetSet) log(level Level, values []interface{}, context Ctx) {
+func (t *targetSet) log(level Level, values []any, context Ctx) {
 	for index, value := range values {
 		if ctx, ok := value.(Ctx); ok {
 			context = context.Extend(ctx)

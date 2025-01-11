@@ -79,7 +79,7 @@ func (s *PrettyTarget) UseColor(b bool) *PrettyTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (s *PrettyTarget) Log(level Level, values []interface{}, context Ctx) {
+func (s *PrettyTarget) Log(level Level, values []any, context Ctx) {
 	if level < s.level {
 		return
 	}
@@ -124,7 +124,7 @@ func (s *PrettyTarget) writeLevel(level Level) {
 	}
 }
 
-func (s *PrettyTarget) writeValues(level Level, values []interface{}) {
+func (s *PrettyTarget) writeValues(level Level, values []any) {
 	valueStrs := make([]string, 0)
 	for _, value := range values {
 		valueStrs = append(valueStrs, fmt.Sprintf("%+v", value))
@@ -137,7 +137,7 @@ func (s *PrettyTarget) writeValues(level Level, values []interface{}) {
 	}
 }
 
-func (s *PrettyTarget) writeContext(level Level, context map[string]interface{}) {
+func (s *PrettyTarget) writeContext(level Level, context map[string]any) {
 	contextStrs := make([]string, 0)
 	for key, value := range context {
 

@@ -29,7 +29,7 @@ func NewWithCtx(contextData Ctx) *Logger {
 
 // Log logs values to the loggers targets at the given log level. Any values
 // that have a String method, it's return value will be used instead.
-func (l *Logger) Log(level Level, values ...interface{}) *Logger {
+func (l *Logger) Log(level Level, values ...any) *Logger {
 	if level < l.level {
 		return l
 	}
@@ -39,91 +39,91 @@ func (l *Logger) Log(level Level, values ...interface{}) *Logger {
 
 // Logf works the same way as fmt.Printf. Provide a format string and any
 // values you wish.
-func (l *Logger) Logf(level Level, format string, values ...interface{}) *Logger {
+func (l *Logger) Logf(level Level, format string, values ...any) *Logger {
 	l.Log(level, fmt.Sprintf(format, values...))
 	return l
 }
 
 // Trace is a convenience method for logging values at the trace log level. It
 // behaves the same as Log.
-func (l *Logger) Trace(values ...interface{}) *Logger {
+func (l *Logger) Trace(values ...any) *Logger {
 	l.Log(Trace, values...)
 	return l
 }
 
 // Tracef is a convenience method for logging values at the trace log level. It
 // behaves the same as Logf.
-func (l *Logger) Tracef(format string, values ...interface{}) *Logger {
+func (l *Logger) Tracef(format string, values ...any) *Logger {
 	l.Logf(Trace, format, values...)
 	return l
 }
 
 // Debug is a convenience method for logging values at the debug log level. It
 // behaves the same as Log.
-func (l *Logger) Debug(values ...interface{}) *Logger {
+func (l *Logger) Debug(values ...any) *Logger {
 	l.Log(Debug, values...)
 	return l
 }
 
 // Debugf is a convenience method for logging values at the debug log level. It
 // behaves the same as Logf.
-func (l *Logger) Debugf(format string, values ...interface{}) *Logger {
+func (l *Logger) Debugf(format string, values ...any) *Logger {
 	l.Logf(Debug, format, values...)
 	return l
 }
 
 // Verbose is a convenience method for logging values at the verbose log level. It
 // behaves the same as Log.
-func (l *Logger) Verbose(values ...interface{}) *Logger {
+func (l *Logger) Verbose(values ...any) *Logger {
 	l.Log(Verbose, values...)
 	return l
 }
 
 // Verbosef is a convenience method for logging values at the verbose log level. It
 // behaves the same as Logf.
-func (l *Logger) Verbosef(format string, values ...interface{}) *Logger {
+func (l *Logger) Verbosef(format string, values ...any) *Logger {
 	l.Logf(Verbose, format, values...)
 	return l
 }
 
 // Info is a convenience method for logging values at the info log level. It
 // behaves the same as Log.
-func (l *Logger) Info(values ...interface{}) *Logger {
+func (l *Logger) Info(values ...any) *Logger {
 	l.Log(Info, values...)
 	return l
 }
 
 // Infof is a convenience method for logging values at the info log level. It
 // behaves the same as Logf.
-func (l *Logger) Infof(format string, values ...interface{}) *Logger {
+func (l *Logger) Infof(format string, values ...any) *Logger {
 	l.Logf(Info, format, values...)
 	return l
 }
 
 // Warn is a convenience method for logging values at the warn log level. It
 // behaves the same as Log.
-func (l *Logger) Warn(values ...interface{}) *Logger {
+func (l *Logger) Warn(values ...any) *Logger {
 	l.Log(Warn, values...)
 	return l
 }
 
 // Warnf is a convenience method for logging values at the warn log level. It
 // behaves the same as Logf.
-func (l *Logger) Warnf(format string, values ...interface{}) *Logger {
+func (l *Logger) Warnf(format string, values ...any) *Logger {
 	l.Logf(Warn, format, values...)
 	return l
 }
 
 // Error is a convenience method for logging values at the error log level. It
 // behaves the same as Log.
-func (l *Logger) Error(values ...interface{}) *Logger {
+func (l *Logger) Error(values ...any) *Logger {
 	l.Log(Error, values...)
 	return l
 }
 
 // Errorf is a convenience method for logging values at the error log level. It
 // behaves the same as Logf.
-func (l *Logger) Errorf(format string, values ...interface{}) *Logger {
+func (l *Logger) Errorf(format string, values ...any) *Logger {
 	l.Logf(Error, format, values...)
 	return l
 }
@@ -131,7 +131,7 @@ func (l *Logger) Errorf(format string, values ...interface{}) *Logger {
 // Fatal is a convenience method for logging values at the fatal log level. It
 // behaves the same as Log with the exception that it exits the program with
 // code 1.
-func (l *Logger) Fatal(values ...interface{}) {
+func (l *Logger) Fatal(values ...any) {
 	l.Log(Fatal, values...)
 	os.Exit(1)
 }
@@ -139,21 +139,21 @@ func (l *Logger) Fatal(values ...interface{}) {
 // Fatalf is a convenience method for logging values at the fatal log level. It
 // behaves the same as Logf with the exception that it exits the program with
 // code 1.
-func (l *Logger) Fatalf(format string, values ...interface{}) {
+func (l *Logger) Fatalf(format string, values ...any) {
 	l.Logf(Fatal, format, values...)
 	os.Exit(1)
 }
 
 // Panic is a convenience method for logging values at the panic log level. It
 // behaves the same as Log.
-func (l *Logger) Panic(values ...interface{}) {
+func (l *Logger) Panic(values ...any) {
 	l.Log(Panic, values...)
 	panic(fmt.Sprint(values...))
 }
 
 // Panicf is a convenience method for logging values at the panic log level. It
 // behaves the same as Logf.
-func (l *Logger) Panicf(format string, values ...interface{}) {
+func (l *Logger) Panicf(format string, values ...any) {
 	l.Logf(Panic, format, values...)
 	panic(fmt.Sprint(values...))
 }
