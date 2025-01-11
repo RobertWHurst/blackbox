@@ -21,13 +21,13 @@ func TestJsonTarget(t *testing.T) {
 	errBuf := new(bytes.Buffer)
 	jsonTarget := blackbox.NewJSONTarget(outBuf, errBuf)
 
-	values := make([]interface{}, 1)
+	values := make([]any, 1)
 	values[0] = "Hello Test"
 
 	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
-	json.Unmarshal(outBuf.Bytes(), &output)
+	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))
 
 	assert.NotEmpty(t, output.Time)
 	assert.Equal(t, "Hello Test", output.Message)
@@ -42,12 +42,12 @@ func TestJsonTargetSetLevel(t *testing.T) {
 
 	jsonTarget.SetLevel(blackbox.Info)
 
-	values := make([]interface{}, 1)
+	values := make([]any, 1)
 	values[0] = "Filtered Message"
 
 	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"x": "y"})
 
-	values = make([]interface{}, 1)
+	values = make([]any, 1)
 	values[0] = "Hello Test"
 
 	jsonTarget.Log(blackbox.Info, values, blackbox.Ctx{"key": "value"})
@@ -63,13 +63,13 @@ func TestJsonTargetShowTimestamp(t *testing.T) {
 
 	jsonTarget.ShowTimestamp(false)
 
-	values := make([]interface{}, 1)
+	values := make([]any, 1)
 	values[0] = "Hello Test"
 
 	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
-	json.Unmarshal(outBuf.Bytes(), &output)
+	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))
 
 	assert.Empty(t, output.Time)
 	assert.Equal(t, "Hello Test", output.Message)
@@ -84,13 +84,13 @@ func TestJsonTargetShowContext(t *testing.T) {
 
 	jsonTarget.ShowContext(false)
 
-	values := make([]interface{}, 1)
+	values := make([]any, 1)
 	values[0] = "Hello Test"
 
 	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
 
 	var output JSONOutput
-	json.Unmarshal(outBuf.Bytes(), &output)
+	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))
 
 	assert.NotEmpty(t, output.Time)
 	assert.Equal(t, "Hello Test", output.Message)

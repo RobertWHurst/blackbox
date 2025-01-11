@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"time"
 )
@@ -89,14 +88,16 @@ func (j *JSONTarget) Log(level Level, values []interface{}, context Ctx) {
 
 	jsonBytes, err := json.Marshal(jsonData)
 	if err != nil {
-		log.Println(err)
-		return
+		panic(err)
 	}
 	jsonBytes = []byte(string(jsonBytes) + "\n")
 
 	if level >= Warn {
-		j.errTarget.Write(jsonBytes)
+		_, err = j.errTarget.Write(jsonBytes)
 	} else {
-		j.outTarget.Write(jsonBytes)
+		_, err = j.outTarget.Write(jsonBytes)
+	}
+	if err != nil {
+		panic(err)
 	}
 }
