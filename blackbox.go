@@ -124,7 +124,7 @@ func (l *Logger) Error(values ...any) *Logger {
 // Errorf is a convenience method for logging values at the error log level. It
 // behaves the same as Logf.
 func (l *Logger) Errorf(format string, values ...any) *Logger {
-	l.Logf(Error, format, values...)
+	l.Log(Error, fmt.Errorf(format, values...))
 	return l
 }
 
