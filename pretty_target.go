@@ -3,6 +3,8 @@ package blackbox
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -207,7 +209,39 @@ func (s *PrettyTarget) writeSource(level Level, getSource func() *Source) {
 		return
 	}
 
-	sourceStr := fmt.Sprintf(" (%s:%d %s)", source.File, source.Line, source.Function)
+	functionPackageAndName := source.Function
+	funcPathChunks := strings.Split(functionPackageAndName, "/")
+	if len(funcPathChunks) > 0 {
+		functionPackageAndName = funcPathChunks[len(funcPathChunks)-1]
+	}
+	if s.useColor {
+		functionPackageAndName = wrapStrInSourceColorCodes("packageAndFunctionName", functionPackageAndName)
+	}
+
+	filePath := source.File
+	cwd, getwdErr := os.Getwd()
+	if getwdErr == nil {
+		relFilePath, relErr := filepath.Rel(cwd, source.File)
+		if relErr == nil {
+			filePath = relFilePath
+		}
+	}
+	if s.useColor {
+		filePath = wrapStrInSourceColorCodes("filePath", filePath)
+	}
+
+	lineNumber := fmt.Sprintf("%d", source.Line)
+	if s.useColor {
+		lineNumber = wrapStrInSourceColorCodes("lineNumber", lineNumber)
+	}
+
+	separator := "@=>"
+	if s.useColor {
+		separator = wrapStrInSourceColorCodes("separator", separator)
+	}
+
+	sourceStr := fmt.Sprintf(" %s %s - [%s:%s]", separator, functionPackageAndName, filePath, lineNumber)
+
 	sourceBytes := []byte(sourceStr)
 	var err error
 	if level >= Warn {
@@ -251,6 +285,20 @@ func wrapStrInAnsiLevelColorCodes(level Level, str string) string {
 		str = "\u001b[37m\u001b[41;1m" + str + "\u001b[0m"
 	case Panic:
 		str = "\u001b[37m\u001b[45;1m" + str + "\u001b[0m"
+	}
+	return str
+}
+
+func wrapStrInSourceColorCodes(kind string, str string) string {
+	switch kind {
+	case "separator":
+		return "\u001b[90m" + str + "\u001b[0m"
+	case "packageAndFunctionName":
+		return "\u001b[32m" + str + "\u001b[0m"
+	case "filePath":
+		return "\u001b[33m" + str + "\u001b[0m"
+	case "lineNumber":
+		return "\u001b[35m" + str + "\u001b[0m"
 	}
 	return str
 }
