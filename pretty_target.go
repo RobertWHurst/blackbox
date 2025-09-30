@@ -13,29 +13,30 @@ import (
 // PrettyTarget is a Target that produces newline separated human readable
 // output suitable for stdout and stderr. It also supports colorized log levels.
 type PrettyTarget struct {
-	outTarget     io.Writer
-	errTarget     io.Writer
-	level         Level
+	showLoggerID  bool
 	showTimestamp bool
 	showLevel     bool
-	contextFields []string
 	showContext   bool
 	useColor      bool
 	useSource     bool
+	level         Level
+	outTarget     io.Writer
+	errTarget     io.Writer
+	contextFields []string
 }
 
-var _ Target = &JSONTarget{}
+var _ Target = &PrettyTarget{}
 
 // NewPrettyTarget creates a PrettyTarget for use with a logger
 func NewPrettyTarget(outTarget io.Writer, errTarget io.Writer) *PrettyTarget {
 	return &PrettyTarget{
-		outTarget:     outTarget,
-		errTarget:     errTarget,
-		level:         Trace,
 		showTimestamp: true,
 		showLevel:     true,
 		showContext:   true,
 		useColor:      true,
+		level:         Trace,
+		outTarget:     outTarget,
+		errTarget:     errTarget,
 	}
 }
 
@@ -43,6 +44,14 @@ func NewPrettyTarget(outTarget io.Writer, errTarget io.Writer) *PrettyTarget {
 // this setting is independent of the log level set on the logger itself.
 func (s *PrettyTarget) SetLevel(level Level) *PrettyTarget {
 	s.level = level
+	return s
+}
+
+// ShowLoggerID will enable or disable logger ID values in the output depending
+// on the boolean value passed. Logger IDs can be useful when the output of
+// multiple loggers are viewed together.
+func (s *PrettyTarget) ShowLoggerID(b bool) *PrettyTarget {
+	s.showLoggerID = b
 	return s
 }
 
@@ -82,17 +91,26 @@ func (s *PrettyTarget) UseColor(b bool) *PrettyTarget {
 	return s
 }
 
-// UseSource enables the inclusion of source
-func (s *PrettyTarget) UseSource(b bool) *PrettyTarget {
+// ShowSource enables the inclusion of source
+func (s *PrettyTarget) ShowSource(b bool) *PrettyTarget {
 	s.useSource = b
 	return s
 }
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource func() *Source) {
+func (s *PrettyTarget) Log(loggerID string, level Level, values []any, context Ctx, getSource func() *Source) {
 	if level < s.level {
 		return
+	}
+
+	str := ""
+	if s.showLoggerID {
+		loggerIDStr := loggerID + " "
+		if s.useColor {
+			loggerIDStr = wrapStrInColorCodes("loggerID", loggerIDStr)
+		}
+		str += loggerIDStr
 	}
 
 	if s.showTimestamp {
@@ -100,7 +118,7 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 		if s.useColor {
 			timestampStr = wrapStrInColorCodes("timestamp", timestampStr)
 		}
-		s.writeByLevel(level, timestampStr)
+		str += timestampStr
 	}
 
 	if s.showLevel {
@@ -112,7 +130,7 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 		if s.useColor {
 			levelStr = wrapStrInAnsiLevelColorCodes(level, levelStr)
 		}
-		s.writeByLevel(level, levelStr+padStr+" ")
+		str += levelStr + padStr + " "
 	}
 
 	valueStrs := make([]string, 0)
@@ -123,7 +141,7 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 	if s.useColor {
 		valueStr = wrapStrInColorCodes("value", valueStr)
 	}
-	s.writeByLevel(level, valueStr)
+	str += valueStr
 
 	if s.showContext {
 		contextStrs := make([]string, 0)
@@ -151,7 +169,7 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 		}
 		sort.Strings(contextStrs)
 		contextStr := strings.Join(contextStrs, " ")
-		s.writeByLevel(level, " "+contextStr)
+		str += " " + contextStr
 	}
 
 	if s.useSource {
@@ -192,10 +210,11 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 			separator = wrapStrInColorCodes("separator", separator)
 		}
 		sourceStr := fmt.Sprintf(" %s %s:%s - %s", separator, filePath, lineNumber, functionAndPackageName)
-		s.writeByLevel(level, sourceStr)
+		str += sourceStr
 	}
 
-	s.writeByLevel(level, "\n")
+	str += "\n"
+	s.writeByLevel(level, str)
 }
 
 func (s *PrettyTarget) writeByLevel(level Level, str string) {
@@ -234,6 +253,8 @@ func wrapStrInAnsiLevelColorCodes(level Level, str string) string {
 
 func wrapStrInColorCodes(kind string, str string) string {
 	switch kind {
+	case "loggerID":
+		return "\u001b[90;1m" + str + "\u001b[0m"
 	case "timestamp":
 		return "\u001b[90m" + str + "\u001b[0m"
 	case "value":

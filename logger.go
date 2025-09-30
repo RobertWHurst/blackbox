@@ -2,12 +2,14 @@ package blackbox
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"runtime"
 )
 
 // Logger will take log messages and write them to the targets provided
 type Logger struct {
+	id        string
 	level     Level
 	targetSet *targetSet
 	context   Ctx
@@ -16,6 +18,7 @@ type Logger struct {
 // New creates a new blackbox logger
 func New() *Logger {
 	return &Logger{
+		id:        generateID(),
 		level:     Trace,
 		targetSet: &targetSet{},
 		context:   make(Ctx, 0),
@@ -171,6 +174,7 @@ func (l *Logger) AddTarget(target Target) {
 // target set as the one WithCtx is called upon.
 func (l *Logger) WithCtx(context Ctx) *Logger {
 	return &Logger{
+		id:        l.id,
 		level:     l.level,
 		context:   l.context.Extend(context),
 		targetSet: l.targetSet,
@@ -193,5 +197,18 @@ func (l *Logger) log(level Level, values ...any) {
 	}
 	pcs := make([]uintptr, 64)
 	n := runtime.Callers(2, pcs)
-	l.targetSet.log(level, values, l.context, pcs[:n])
+	l.targetSet.log(l.id, level, values, l.context, pcs[:n])
+}
+
+func generateID() string {
+	var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	b := make([]rune, 7)
+	for i := range b {
+		if i == 3 {
+			b[i] = '-'
+		} else {
+			b[i] = letters[rand.Intn(len(letters))]
+		}
+	}
+	return string(b)
 }

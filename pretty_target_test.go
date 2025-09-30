@@ -16,7 +16,7 @@ func TestPrettyTarget(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.Regexp(
 		t,
@@ -36,12 +36,12 @@ func TestPrettyTargetSetLevel(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Filtered Message"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"x": "y"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"x": "y"}, nil)
 
 	values = make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Info, values, blackbox.Ctx{"key": "value"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Info, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.NotRegexp(t, `Filtered Message`, outBuf.String())
 	assert.Regexp(t, `Hello Test`, outBuf.String())
@@ -57,7 +57,7 @@ func TestPrettyTargetShowTimestamp(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.Regexp(
 		t,
@@ -76,7 +76,7 @@ func TestPrettyTargetSelectContext(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value", "x": "y"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value", "x": "y"}, nil)
 
 	assert.Regexp(t, "x[^ ]*=y", outBuf.String())
 }
@@ -91,7 +91,7 @@ func TestPrettyTargetShowContext(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.Regexp(
 		t,
@@ -111,7 +111,7 @@ func TestPrettyTargetUseColor(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.Regexp(
 		t,
@@ -126,12 +126,12 @@ func TestPrettyTargetUseSource(t *testing.T) {
 	errBuf := new(bytes.Buffer)
 	prettyTarget := blackbox.NewPrettyTarget(outBuf, errBuf)
 
-	prettyTarget.UseColor(false).UseSource(true)
+	prettyTarget.UseColor(false).ShowSource(true)
 
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	prettyTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, func() *blackbox.Source {
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, func() *blackbox.Source {
 		return &blackbox.Source{
 			File:     "file.go",
 			Line:     123,

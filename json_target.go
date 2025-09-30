@@ -11,13 +11,14 @@ import (
 // JSONTarget is a Target that produces newline separated json output containing
 // log data.
 type JSONTarget struct {
-	outTarget     io.Writer
-	errTarget     io.Writer
-	level         Level
+	showLoggerID  bool
 	showTimestamp bool
 	showLevel     bool
 	showContext   bool
 	useSource     bool
+	level         Level
+	outTarget     io.Writer
+	errTarget     io.Writer
 }
 
 var _ Target = &JSONTarget{}
@@ -25,12 +26,12 @@ var _ Target = &JSONTarget{}
 // NewJSONTarget creates a JSONTarget for use with a logger
 func NewJSONTarget(outTarget io.Writer, errTarget io.Writer) *JSONTarget {
 	return &JSONTarget{
-		outTarget:     outTarget,
-		errTarget:     errTarget,
-		level:         Trace,
 		showTimestamp: true,
 		showLevel:     true,
 		showContext:   true,
+		level:         Trace,
+		outTarget:     outTarget,
+		errTarget:     errTarget,
 	}
 }
 
@@ -70,7 +71,7 @@ func (s *JSONTarget) UseSource(b bool) *JSONTarget {
 
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (j *JSONTarget) Log(level Level, values []any, context Ctx, getSource func() *Source) {
+func (j *JSONTarget) Log(loggerID string, level Level, values []any, context Ctx, getSource func() *Source) {
 	if level < j.level {
 		return
 	}
@@ -86,13 +87,13 @@ func (j *JSONTarget) Log(level Level, values []any, context Ctx, getSource func(
 	for _, value := range values {
 		strValues = append(strValues, fmt.Sprintf("%+v", value))
 	}
-
 	jsonData["message"] = strings.Join(strValues, " ")
 	if j.showContext {
 		jsonData["context"] = context
 	}
-
-	jsonData["source"] = nil
+	if j.showLoggerID {
+		jsonData["loggerID"] = loggerID
+	}
 	if j.useSource {
 		jsonData["source"] = getSource()
 	}
@@ -101,6 +102,7 @@ func (j *JSONTarget) Log(level Level, values []any, context Ctx, getSource func(
 	if err != nil {
 		panic(err)
 	}
+
 	jsonBytes = append(jsonBytes, byte('\n'))
 
 	if level >= Warn {
