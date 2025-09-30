@@ -94,173 +94,116 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource fun
 	if level < s.level {
 		return
 	}
+
 	if s.showTimestamp {
-		s.writeCurrentTimestamp(level)
+		timestampStr := time.Now().Local().Format("2006-01-02 15:04:05") + " "
+		if s.useColor {
+			timestampStr = wrapStrInColorCodes("timestamp", timestampStr)
+		}
+		s.writeByLevel(level, timestampStr)
 	}
+
 	if s.showLevel {
-		s.writeLevel(level)
-	}
-	s.writeValues(level, values)
-	if s.showContext {
-		s.writeContext(level, context)
-	}
-	if s.useSource {
-		s.writeSource(level, getSource)
-	}
-	s.writeNewline(level)
-}
-
-func (s *PrettyTarget) writeCurrentTimestamp(level Level) {
-	timestampBytes := []byte(time.Now().Local().Format(time.RFC3339) + " ")
-	var err error
-	if level >= Warn {
-		_, err = s.errTarget.Write(timestampBytes)
-	} else {
-		_, err = s.outTarget.Write(timestampBytes)
-	}
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (s *PrettyTarget) writeLevel(level Level) {
-	levelStr := level.String()
-
-	var padStr string
-	for i := len(levelStr); i < 7; i++ {
-		padStr += " "
-	}
-	if s.useColor {
-		levelStr = wrapStrInAnsiLevelColorCodes(level, levelStr)
+		levelStr := level.String()
+		var padStr string
+		for i := len(levelStr); i < 7; i++ {
+			padStr += " "
+		}
+		if s.useColor {
+			levelStr = wrapStrInAnsiLevelColorCodes(level, levelStr)
+		}
+		s.writeByLevel(level, levelStr+padStr+" ")
 	}
 
-	levelBytes := []byte(levelStr + padStr + " ")
-	var err error
-	if level >= Warn {
-		_, err = s.errTarget.Write(levelBytes)
-	} else {
-		_, err = s.outTarget.Write(levelBytes)
-	}
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (s *PrettyTarget) writeValues(level Level, values []any) {
 	valueStrs := make([]string, 0)
 	for _, value := range values {
 		valueStrs = append(valueStrs, fmt.Sprintf("%+v", value))
 	}
-	messageBytes := []byte(strings.Join(valueStrs, " "))
-	var err error
-	if level >= Warn {
-		_, err = s.errTarget.Write(messageBytes)
-	} else {
-		_, err = s.outTarget.Write(messageBytes)
+	valueStr := strings.Join(valueStrs, " ")
+	if s.useColor {
+		valueStr = wrapStrInColorCodes("value", valueStr)
 	}
-	if err != nil {
-		panic(err)
-	}
-}
+	s.writeByLevel(level, valueStr)
 
-func (s *PrettyTarget) writeContext(level Level, context map[string]any) {
-	contextStrs := make([]string, 0)
-	for key, value := range context {
-
-		if len(s.contextFields) != 0 {
-			skipField := true
-			for _, field := range s.contextFields {
-				if key == field {
-					skipField = false
-					break
+	if s.showContext {
+		contextStrs := make([]string, 0)
+		for key, value := range context {
+			if len(s.contextFields) != 0 {
+				skipField := true
+				for _, field := range s.contextFields {
+					if key == field {
+						skipField = false
+						break
+					}
+				}
+				if skipField {
+					continue
 				}
 			}
-			if skipField {
-				continue
+			if s.useColor {
+				key = wrapStrInColorCodes("contextKey", key)
+			}
+			formattedValue := strings.Replace(fmt.Sprintf("%+v", value), "\n", "\\n", -1)
+			if s.useColor {
+				formattedValue = wrapStrInColorCodes("contextValue", formattedValue)
+			}
+			contextStrs = append(contextStrs, key+"="+formattedValue)
+		}
+		sort.Strings(contextStrs)
+		contextStr := strings.Join(contextStrs, " ")
+		s.writeByLevel(level, " "+contextStr)
+	}
+
+	if s.useSource {
+		source := getSource()
+		if source == nil {
+			return
+		}
+		functionAndPackageName := source.Function
+		funcPathChunks := strings.Split(functionAndPackageName, "/")
+		if len(funcPathChunks) > 0 {
+			functionAndPackageName = funcPathChunks[len(funcPathChunks)-1]
+		}
+		if s.useColor {
+			chunks := strings.Split(functionAndPackageName, ".")
+			colorizedChunks := make([]string, len(chunks))
+			for i, chunk := range chunks {
+				colorizedChunks[i] = wrapStrInColorCodes("packageAndFunctionName", chunk)
+			}
+			functionAndPackageName = strings.Join(colorizedChunks, ".")
+		}
+		filePath := source.File
+		cwd, getwdErr := os.Getwd()
+		if getwdErr == nil {
+			relFilePath, relErr := filepath.Rel(cwd, source.File)
+			if relErr == nil {
+				filePath = relFilePath
 			}
 		}
-
 		if s.useColor {
-			key = wrapStrInAnsiLevelColorCodes(level, key)
+			filePath = wrapStrInColorCodes("filePath", filePath)
 		}
-
-		formattedValue := strings.Replace(fmt.Sprintf("%+v", value), "\n", "\\n", -1)
-		contextStrs = append(contextStrs, key+"="+formattedValue)
+		lineNumber := fmt.Sprintf("%d", source.Line)
+		if s.useColor {
+			lineNumber = wrapStrInColorCodes("lineNumber", lineNumber)
+		}
+		separator := "@=>"
+		if s.useColor {
+			separator = wrapStrInColorCodes("separator", separator)
+		}
+		sourceStr := fmt.Sprintf(" %s %s:%s - %s", separator, filePath, lineNumber, functionAndPackageName)
+		s.writeByLevel(level, sourceStr)
 	}
 
-	sort.Strings(contextStrs)
-	contextStr := strings.Join(contextStrs, " ")
-	contextBytes := []byte(" " + contextStr)
-
-	var err error
-	if level >= Warn {
-		_, err = s.errTarget.Write(contextBytes)
-	} else {
-		_, err = s.outTarget.Write(contextBytes)
-	}
-	if err != nil {
-		panic(err)
-	}
+	s.writeByLevel(level, "\n")
 }
 
-func (s *PrettyTarget) writeSource(level Level, getSource func() *Source) {
-	source := getSource()
-	if source == nil {
-		return
-	}
-
-	functionPackageAndName := source.Function
-	funcPathChunks := strings.Split(functionPackageAndName, "/")
-	if len(funcPathChunks) > 0 {
-		functionPackageAndName = funcPathChunks[len(funcPathChunks)-1]
-	}
-	if s.useColor {
-		functionPackageAndName = wrapStrInSourceColorCodes("packageAndFunctionName", functionPackageAndName)
-	}
-
-	filePath := source.File
-	cwd, getwdErr := os.Getwd()
-	if getwdErr == nil {
-		relFilePath, relErr := filepath.Rel(cwd, source.File)
-		if relErr == nil {
-			filePath = relFilePath
-		}
-	}
-	if s.useColor {
-		filePath = wrapStrInSourceColorCodes("filePath", filePath)
-	}
-
-	lineNumber := fmt.Sprintf("%d", source.Line)
-	if s.useColor {
-		lineNumber = wrapStrInSourceColorCodes("lineNumber", lineNumber)
-	}
-
-	separator := "@=>"
-	if s.useColor {
-		separator = wrapStrInSourceColorCodes("separator", separator)
-	}
-
-	sourceStr := fmt.Sprintf(" %s %s - [%s:%s]", separator, functionPackageAndName, filePath, lineNumber)
-
-	sourceBytes := []byte(sourceStr)
+func (s *PrettyTarget) writeByLevel(level Level, str string) {
 	var err error
 	if level >= Warn {
-		_, err = s.errTarget.Write(sourceBytes)
+		_, err = s.errTarget.Write([]byte(str))
 	} else {
-		_, err = s.outTarget.Write(sourceBytes)
-	}
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (s *PrettyTarget) writeNewline(level Level) {
-	newLineBytes := []byte("\n")
-	var err error
-	if level >= Warn {
-		_, err = s.errTarget.Write(newLineBytes)
-	} else {
-		_, err = s.outTarget.Write(newLineBytes)
+		_, err = s.outTarget.Write([]byte(str))
 	}
 	if err != nil {
 		panic(err)
@@ -289,8 +232,12 @@ func wrapStrInAnsiLevelColorCodes(level Level, str string) string {
 	return str
 }
 
-func wrapStrInSourceColorCodes(kind string, str string) string {
+func wrapStrInColorCodes(kind string, str string) string {
 	switch kind {
+	case "timestamp":
+		return "\u001b[90m" + str + "\u001b[0m"
+	case "value":
+		return "\u001b[37;1m" + str + "\u001b[0m"
 	case "separator":
 		return "\u001b[90m" + str + "\u001b[0m"
 	case "packageAndFunctionName":
@@ -299,6 +246,10 @@ func wrapStrInSourceColorCodes(kind string, str string) string {
 		return "\u001b[33m" + str + "\u001b[0m"
 	case "lineNumber":
 		return "\u001b[35m" + str + "\u001b[0m"
+	case "contextKey":
+		return "\u001b[90;1m" + str + "\u001b[0m"
+	case "contextValue":
+		return "\u001b[90m" + str + "\u001b[0m"
 	}
 	return str
 }
