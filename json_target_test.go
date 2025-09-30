@@ -24,7 +24,7 @@ func TestJsonTarget(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	var output JSONOutput
 	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))
@@ -45,12 +45,12 @@ func TestJsonTargetSetLevel(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Filtered Message"
 
-	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"x": "y"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"x": "y"}, nil)
 
 	values = make([]any, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Info, values, blackbox.Ctx{"key": "value"})
+	jsonTarget.Log(blackbox.Info, values, blackbox.Ctx{"key": "value"}, nil)
 
 	assert.NotRegexp(t, `Filtered Message`, outBuf.String())
 	assert.Regexp(t, `Hello Test`, outBuf.String())
@@ -66,7 +66,7 @@ func TestJsonTargetShowTimestamp(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	var output JSONOutput
 	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))
@@ -87,7 +87,7 @@ func TestJsonTargetShowContext(t *testing.T) {
 	values := make([]any, 1)
 	values[0] = "Hello Test"
 
-	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"})
+	jsonTarget.Log(blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
 	var output JSONOutput
 	assert.NoError(t, json.Unmarshal(outBuf.Bytes(), &output))

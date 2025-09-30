@@ -8,19 +8,6 @@ import (
 	"time"
 )
 
-// NewPrettyTarget creates a PrettyTarget for use with a logger
-func NewPrettyTarget(outTarget io.Writer, errTarget io.Writer) *PrettyTarget {
-	return &PrettyTarget{
-		outTarget:     outTarget,
-		errTarget:     errTarget,
-		level:         Trace,
-		showTimestamp: true,
-		showLevel:     true,
-		showContext:   true,
-		useColor:      true,
-	}
-}
-
 // PrettyTarget is a Target that produces newline separated human readable
 // output suitable for stdout and stderr. It also supports colorized log levels.
 type PrettyTarget struct {
@@ -32,6 +19,22 @@ type PrettyTarget struct {
 	contextFields []string
 	showContext   bool
 	useColor      bool
+	useSource     bool
+}
+
+var _ Target = &JSONTarget{}
+
+// NewPrettyTarget creates a PrettyTarget for use with a logger
+func NewPrettyTarget(outTarget io.Writer, errTarget io.Writer) *PrettyTarget {
+	return &PrettyTarget{
+		outTarget:     outTarget,
+		errTarget:     errTarget,
+		level:         Trace,
+		showTimestamp: true,
+		showLevel:     true,
+		showContext:   true,
+		useColor:      true,
+	}
 }
 
 // SetLevel sets the minimum log level that PrettyTarget will output. Note that
@@ -77,9 +80,15 @@ func (s *PrettyTarget) UseColor(b bool) *PrettyTarget {
 	return s
 }
 
+// UseSource enables the inclusion of source
+func (s *PrettyTarget) UseSource(b bool) *PrettyTarget {
+	s.useSource = b
+	return s
+}
+
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (s *PrettyTarget) Log(level Level, values []any, context Ctx) {
+func (s *PrettyTarget) Log(level Level, values []any, context Ctx, getSource func() *Source) {
 	if level < s.level {
 		return
 	}
@@ -92,6 +101,9 @@ func (s *PrettyTarget) Log(level Level, values []any, context Ctx) {
 	s.writeValues(level, values)
 	if s.showContext {
 		s.writeContext(level, context)
+	}
+	if s.useSource {
+		s.writeSource(level, getSource)
 	}
 	s.writeNewline(level)
 }
@@ -183,6 +195,25 @@ func (s *PrettyTarget) writeContext(level Level, context map[string]any) {
 		_, err = s.errTarget.Write(contextBytes)
 	} else {
 		_, err = s.outTarget.Write(contextBytes)
+	}
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (s *PrettyTarget) writeSource(level Level, getSource func() *Source) {
+	source := getSource()
+	if source == nil {
+		return
+	}
+
+	sourceStr := fmt.Sprintf(" (%s:%d %s)", source.File, source.Line, source.Function)
+	sourceBytes := []byte(sourceStr)
+	var err error
+	if level >= Warn {
+		_, err = s.errTarget.Write(sourceBytes)
+	} else {
+		_, err = s.outTarget.Write(sourceBytes)
 	}
 	if err != nil {
 		panic(err)

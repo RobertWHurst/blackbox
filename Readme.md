@@ -188,7 +188,7 @@ interface - a single Log Method.
 
 ```go
 type Target interface {
-    Log(level Level, values []interface{}, context Context) error
+    Log(level Level, values []any, context Context) error
 }
 ```
 
@@ -206,7 +206,7 @@ passing the values to the target, it allows the target to decide how to
 format and/or consume them respective of value type.
 
 The third argument is the context of the message, a map with string keys and
-interface{} as the values.
+any as the values.
 
 With these values targets can to a wide range of things with maximum flexibility
 and control.

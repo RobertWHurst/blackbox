@@ -1,26 +1,30 @@
 package blackbox
 
+type TestTarget struct {
+	logged []Logged
+}
+
+var _ Target = &TestTarget{}
+
 func NewTestTarget() *TestTarget {
 	return &TestTarget{
 		logged: make([]Logged, 0),
 	}
 }
 
-type TestTarget struct {
-	logged []Logged
-}
-
 type Logged struct {
 	Level   Level
-	Values  []interface{}
+	Values  []any
 	Context Ctx
+	Source  *Source
 }
 
-func (t *TestTarget) Log(level Level, values []interface{}, context Ctx) {
+func (t *TestTarget) Log(level Level, values []any, context Ctx, getSource func() *Source) {
 	t.logged = append(t.logged, Logged{
 		Level:   level,
 		Values:  values,
 		Context: context,
+		Source:  getSource(),
 	})
 }
 

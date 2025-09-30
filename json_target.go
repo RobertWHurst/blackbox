@@ -8,6 +8,20 @@ import (
 	"time"
 )
 
+// JSONTarget is a Target that produces newline separated json output containing
+// log data.
+type JSONTarget struct {
+	outTarget     io.Writer
+	errTarget     io.Writer
+	level         Level
+	showTimestamp bool
+	showLevel     bool
+	showContext   bool
+	useSource     bool
+}
+
+var _ Target = &JSONTarget{}
+
 // NewJSONTarget creates a JSONTarget for use with a logger
 func NewJSONTarget(outTarget io.Writer, errTarget io.Writer) *JSONTarget {
 	return &JSONTarget{
@@ -18,17 +32,6 @@ func NewJSONTarget(outTarget io.Writer, errTarget io.Writer) *JSONTarget {
 		showLevel:     true,
 		showContext:   true,
 	}
-}
-
-// JSONTarget is a Target that produces newline separated json output containing
-// log data.
-type JSONTarget struct {
-	outTarget     io.Writer
-	errTarget     io.Writer
-	level         Level
-	showTimestamp bool
-	showLevel     bool
-	showContext   bool
 }
 
 // SetLevel sets the minimum log level that JSONTarget will output. Note that
@@ -59,14 +62,20 @@ func (j *JSONTarget) ShowContext(b bool) *JSONTarget {
 	return j
 }
 
+// UseSource enables the inclusion of source
+func (s *JSONTarget) UseSource(b bool) *JSONTarget {
+	s.useSource = b
+	return s
+}
+
 // Log takes a Level and series of values, then outputs them formatted
 // accordingly.
-func (j *JSONTarget) Log(level Level, values []interface{}, context Ctx) {
+func (j *JSONTarget) Log(level Level, values []any, context Ctx, getSource func() *Source) {
 	if level < j.level {
 		return
 	}
 
-	jsonData := make(map[string]interface{}, 1)
+	jsonData := make(map[string]any, 1)
 	if j.showTimestamp {
 		jsonData["time"] = time.Now().Local().Format(time.RFC3339)
 	}
@@ -78,19 +87,21 @@ func (j *JSONTarget) Log(level Level, values []interface{}, context Ctx) {
 		strValues = append(strValues, fmt.Sprintf("%+v", value))
 	}
 
-	fmt.Printf("%+v\n", values)
-	fmt.Printf("%+v\n", strValues)
-
 	jsonData["message"] = strings.Join(strValues, " ")
 	if j.showContext {
 		jsonData["context"] = context
+	}
+
+	jsonData["source"] = nil
+	if j.useSource {
+		jsonData["source"] = getSource()
 	}
 
 	jsonBytes, err := json.Marshal(jsonData)
 	if err != nil {
 		panic(err)
 	}
-	jsonBytes = []byte(string(jsonBytes) + "\n")
+	jsonBytes = append(jsonBytes, byte('\n'))
 
 	if level >= Warn {
 		_, err = j.errTarget.Write(jsonBytes)
