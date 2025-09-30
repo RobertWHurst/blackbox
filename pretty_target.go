@@ -114,7 +114,7 @@ func (s *PrettyTarget) Log(loggerID string, level Level, values []any, context C
 	}
 
 	if s.showTimestamp {
-		timestampStr := time.Now().Local().Format("2006-01-02 15:04:05") + " "
+		timestampStr := time.Now().Local().Format("2006-01-02 15:04:05 MST") + " "
 		if s.useColor {
 			timestampStr = wrapStrInColorCodes("timestamp", timestampStr)
 		}
