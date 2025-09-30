@@ -99,5 +99,7 @@ func TestLoggerGetSource(t *testing.T) {
 	logged, ok := testTarget.LastLogged()
 
 	assert.Equal(t, true, ok)
-	assert.Equal(t, blackbox.Ctx{"key": "value"}, logged.Source)
+	assert.Contains(t, logged.Source.Function, "TestLoggerGetSource")
+	assert.Contains(t, logged.Source.File, "logger_test.go")
+	assert.Greater(t, logged.Source.Line, 5)
 }
