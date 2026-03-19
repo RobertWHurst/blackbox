@@ -146,6 +146,9 @@ func (s *PrettyTarget) Log(loggerID string, level Level, values []any, context C
 	if s.showContext {
 		contextStrs := make([]string, 0)
 		for key, value := range context {
+			if strings.HasPrefix(key, "-") {
+				continue
+			}
 			if len(s.contextFields) != 0 {
 				skipField := true
 				for _, field := range s.contextFields {

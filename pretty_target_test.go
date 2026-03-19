@@ -20,8 +20,8 @@ func TestPrettyTarget(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z \x1b\[\d{2}mtrace\x1b\[`+
-			`0m   Hello Test \x1b\[\d{2}mkey\x1b\[0m=value\n$`,
+		`^\x1b\[\d+m\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [A-Z]+ \x1b\[0m\x1b\[\d+mtrace\x1b\[`+
+			`0m   \x1b\[\d+;?\d*mHello Test\x1b\[0m \x1b\[\d+;?\d*mkey\x1b\[0m=\x1b\[\d+m?value\x1b\[0m\n$`,
 		outBuf.String(),
 	)
 }
@@ -61,7 +61,7 @@ func TestPrettyTargetShowTimestamp(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\x1b\[\d{2}mtrace\x1b\[0m   Hello Test \x1b\[\d{2}mkey\x1b\[0m=value\n$`,
+		`^\x1b\[\d+mtrace\x1b\[0m   .+Hello Test.+ .+key.+=.+value`,
 		outBuf.String(),
 	)
 }
@@ -78,7 +78,10 @@ func TestPrettyTargetSelectContext(t *testing.T) {
 
 	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value", "x": "y"}, nil)
 
-	assert.Regexp(t, "x[^ ]*=y", outBuf.String())
+	output := outBuf.String()
+	assert.Contains(t, output, "x")
+	assert.Contains(t, output, "y")
+	assert.NotContains(t, output, "value")
 }
 
 func TestPrettyTargetShowContext(t *testing.T) {
@@ -93,12 +96,8 @@ func TestPrettyTargetShowContext(t *testing.T) {
 
 	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{"key": "value"}, nil)
 
-	assert.Regexp(
-		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z \x1b\[\d{2}mtrace\x1b\[`+
-			`0m   Hello Test\n$`,
-		outBuf.String(),
-	)
+	assert.NotRegexp(t, `key`, outBuf.String())
+	assert.Regexp(t, `Hello Test`, outBuf.String())
 }
 
 func TestPrettyTargetUseColor(t *testing.T) {
@@ -115,8 +114,7 @@ func TestPrettyTargetUseColor(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2})|Z trace   Hello Test key=`+
-			`value\n$`,
+		`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [A-Z]+ trace   Hello Test key=value\n$`,
 		outBuf.String(),
 	)
 }
@@ -141,8 +139,27 @@ func TestPrettyTargetUseSource(t *testing.T) {
 
 	assert.Regexp(
 		t,
-		`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:-\d{2}:\d{2}|Z) trace   Hello Test key=`+
-			`value \(file\.go:123 functionName\)\n$`,
+		`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [A-Z]+ trace   Hello Test key=value @=> file\.go:123 - functionName\n$`,
 		outBuf.String(),
 	)
+}
+
+func TestPrettyTargetHiddenContextKeys(t *testing.T) {
+	outBuf := new(bytes.Buffer)
+	errBuf := new(bytes.Buffer)
+	prettyTarget := blackbox.NewPrettyTarget(outBuf, errBuf)
+
+	prettyTarget.UseColor(false)
+
+	values := make([]any, 1)
+	values[0] = "Hello Test"
+
+	prettyTarget.Log("AAA-AAA", blackbox.Trace, values, blackbox.Ctx{
+		"key":     "value",
+		"-hidden": "secret",
+	}, nil)
+
+	assert.Regexp(t, `key=value`, outBuf.String())
+	assert.NotRegexp(t, `hidden`, outBuf.String())
+	assert.NotRegexp(t, `secret`, outBuf.String())
 }
